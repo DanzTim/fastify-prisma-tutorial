@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { createUserHandler, loginHander } from "./user.controller";
+import { createUserHandler, getUsers, loginHander } from "./user.controller";
 import { $ref } from "./user.schema";
 
 export default async function userRoutes(server: FastifyInstance) {
@@ -21,4 +21,13 @@ export default async function userRoutes(server: FastifyInstance) {
             }
         }
     }, loginHander)
+
+    server.get("/", {
+        preHandler: server.authenticate,
+        schema: {
+            response: {
+                200: $ref('userArraySchema')
+            }
+        }
+    }, getUsers)
 }

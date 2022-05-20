@@ -5,6 +5,12 @@ import fjwt from '@fastify/jwt';
 
 export const server = Fastify()
 
+declare module 'fastify' {
+    export interface FastifyInstance {
+        authenticate: any;
+    }
+}
+
 server.get("/", async function () {
     return { status: "Fastify server is running" }
 })
@@ -27,7 +33,7 @@ for (const schema of userSchema) {
     server.addSchema(schema);    
 }
 
-server.register(userRoutes, { prefix: "api/user"})
+server.register(userRoutes, { prefix: "api/users"})
 
 async function main(){
     try {

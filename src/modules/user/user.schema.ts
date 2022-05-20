@@ -9,10 +9,12 @@ const createUserSchema = z.object({
 
 const responseUserSchema = z.object({
     id: z.number(),
-    email: z.string({required_error: "Email is required", invalid_type_error: "Email is not of valid type"}).email(),
+    email: z.string(),
     name: z.string(),
 })
-type createUserInput = z.infer<typeof createUserSchema>
+
+const userArraySchema = z.array(responseUserSchema)
+export type createUserInput = z.infer<typeof createUserSchema>
 
 const loginRequestSchema = z.object({
     name: z.string({required_error: "Name is required"}),
@@ -21,7 +23,6 @@ const loginRequestSchema = z.object({
 const loginResponseSchema = z.object({
     accessToken: z.string()
 })
-type LoginRequestSchema = z.infer<typeof loginRequestSchema>
+export type LoginRequestSchema = z.infer<typeof loginRequestSchema>
 
-const { schemas: userSchema, $ref } = buildJsonSchemas({createUserSchema, responseUserSchema, loginRequestSchema, loginResponseSchema})
-export { createUserInput, userSchema, $ref, LoginRequestSchema }
+export const { schemas: userSchema, $ref } = buildJsonSchemas({createUserSchema, responseUserSchema, userArraySchema, loginRequestSchema, loginResponseSchema})

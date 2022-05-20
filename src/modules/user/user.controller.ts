@@ -1,19 +1,30 @@
+import prisma from "../../utils/prisma";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { server } from "../../app";
-import { verifyPassword } from "../../utils/hash";
+import { hashPassword, verifyPassword } from "../../utils/hash";
 import { createUserInput, LoginRequestSchema } from "./user.schema";
-import { createUser, findUser } from "./user.service";
+import { findUser } from "./user.service";
 
 export async function createUserHandler(request: FastifyRequest<{ Body: createUserInput }>, response: FastifyReply) {
     const { body } = request;
 
     try {
-        const user = createUser(body);
-        return response.code(201).send(user)
-    } catch (e) {
-        console.log(e);
-        return response.code(500).send(e)
+        let { password, ...rest } = body;
+        let { hash, salt } = hashPassword(password)
+    
+        const user = await prisma.user.create({
+            data: { ...rest, salt, password: hash }
+        })
+
+        response.code(201).send(user)
+    } catch (error) {
+        console.log(error);
+        return response.code(500).send({
+            error: true,
+            message: error
+        })
     }
+
 }
 
 export async function loginHander(request: FastifyRequest<{Body: LoginRequestSchema }>, response: FastifyReply) {
@@ -49,5 +60,21 @@ export async function loginHander(request: FastifyRequest<{Body: LoginRequestSch
     } catch (e) {
         console.log(e);
         return response.code(500).send(e)
+    }
+}
+
+export async function getUsers(request: FastifyRequest, response: FastifyReply) {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true
+            }
+        })
+        return users;
+    } catch (error) {
+        console.log(error);
+        return response.code(500).send(error)
     }
 }
